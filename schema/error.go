@@ -4,11 +4,15 @@ import "fmt"
 type ErrorCode int
 
 const (
+
 	ErrorCodeMultipleOf ErrorCode = iota
 	ErrorCodeMaximum
 	ErrorCodeExclusiveMaximum
 	ErrorCodeMinimum
 	ErrorCodeExclusiveMinimum
+
+	ErrorCodeNumberTypeMismatch
+	ErrorCodeStringTypeMismatch
 )
 
 type SchemaError interface {

@@ -9,7 +9,7 @@ func TestNumericConstraint(t*testing.T) {
 
 	tests := []struct{
 		path string
-		n json.Number
+		n interface{}
 		schema Schema
 
 		expected []SchemaError
@@ -40,14 +40,14 @@ func TestNumericConstraint(t*testing.T) {
 		},
 		{
 			path: "a",
-			n: json.Number("100.4"),
+			n: "1",
 			schema: Schema{
 				"maximum": json.Number("100.4"),
 				"exclusiveMaximum": true,
 			},
 
 			expected: []SchemaError {
-				&schemaError{ErrorCodeExclusiveMaximum, "a"},
+				&schemaError{ErrorCodeNumberTypeMismatch, "a"},
 			},
 		},
 	}
