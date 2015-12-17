@@ -5,14 +5,17 @@ type ErrorCode int
 
 const (
 
-	ErrorCodeMultipleOf ErrorCode = iota
-	ErrorCodeMaximum
-	ErrorCodeExclusiveMaximum
-	ErrorCodeMinimum
-	ErrorCodeExclusiveMinimum
+	NumericMultipleOfError ErrorCode = iota
+	NumericTypeMismatchError
+	NumericMaximumError
+	NumericExclusiveMaximumError
+	NumericMinimumError
+	NumericExclusiveMinimumError
 
-	ErrorCodeNumberTypeMismatch
-	ErrorCodeStringTypeMismatch
+	StringTypeMismatchError
+	StringMinLengthError
+	StringMaxLengthError
+	StringPatternError
 )
 
 type SchemaError interface {

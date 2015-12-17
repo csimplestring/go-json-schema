@@ -20,34 +20,34 @@ func (constraint *NumericConstraint) Validate(v interface{}, path string) {
 
 	n, ok := v.(json.Number)
 	if !ok {
-		constraint.addError(newError(ErrorCodeNumberTypeMismatch, path))
+		constraint.addError(newError(NumericTypeMismatchError, path))
 	}
 
 	f, _ := n.Float64()
 
 	if divided, ok := schema.MultipleOf(); ok {
 		if math.Mod(f, divided) != float64(0) {
-			constraint.addError(newError(ErrorCodeMultipleOf, path))
+			constraint.addError(newError(NumericMultipleOfError, path))
 		}
 	}
 
 	if max, ok := schema.Maximum(); ok {
 		if f > max {
-			constraint.addError(newError(ErrorCodeMaximum, path))
+			constraint.addError(newError(NumericMaximumError, path))
 		}
 
 		if schema.ExclusiveMaximum() && f == max {
-			constraint.addError(newError(ErrorCodeExclusiveMaximum, path))
+			constraint.addError(newError(NumericExclusiveMaximumError, path))
 		}
 	}
 
 	if min, ok := schema.Minimum(); ok {
 		if f < min {
-			constraint.addError(newError(ErrorCodeMinimum, path))
+			constraint.addError(newError(NumericMinimumError, path))
 		}
 
 		if schema.ExclusiveMinimum() && f == min {
-			constraint.addError(newError(ErrorCodeExclusiveMinimum, path))
+			constraint.addError(newError(NumericExclusiveMinimumError, path))
 		}
 	}
 }

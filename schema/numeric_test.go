@@ -22,7 +22,7 @@ func TestNumericConstraint(t*testing.T) {
 			},
 
 			expected: []SchemaError {
-				&schemaError{ErrorCodeMultipleOf, "a"},
+				&schemaError{NumericMultipleOfError, "a"},
 			},
 		},
 		{
@@ -34,8 +34,8 @@ func TestNumericConstraint(t*testing.T) {
 			},
 
 			expected: []SchemaError {
-				&schemaError{ErrorCodeMultipleOf, "a"},
-				&schemaError{ErrorCodeMinimum, "a"},
+				&schemaError{NumericMultipleOfError, "a"},
+				&schemaError{NumericMinimumError, "a"},
 			},
 		},
 		{
@@ -47,7 +47,7 @@ func TestNumericConstraint(t*testing.T) {
 			},
 
 			expected: []SchemaError {
-				&schemaError{ErrorCodeNumberTypeMismatch, "a"},
+				&schemaError{NumericTypeMismatchError, "a"},
 			},
 		},
 	}

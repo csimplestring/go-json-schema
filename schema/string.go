@@ -1,20 +1,40 @@
 package schema
+import "regexp"
 
 type StringConstraint struct {
 	schema Schema
 	baseConstraint
 }
 
-func (constraint *StringConstraint) Validate(v interface{}, path string) {
-//	str, ok := v.(string)
-//	if !ok {
-//		constraint.addError(newError(ErrorCodeStringTypeMismatch, path))
-//	}
+func NewStringConstraint(schema Schema) *StringConstraint {
+	return &StringConstraint{
+		schema: schema,
+	}
+}
 
-	// maxLength
-//	strLen := len(str)
-//	if v, ok := constraint.schema["maxLength"]; ok {
-//		maxLen, _ := v.(json.Number).Int64()
-//
-//	}
+func (constraint *StringConstraint) Validate(v interface{}, path string) {
+	str, ok := v.(string)
+	if !ok {
+		constraint.addError(newError(StringTypeMismatchError, path))
+	}
+
+	strLen := len(str)
+
+	if maxLen, ok := constraint.schema.MaxLength(); ok {
+		if strLen > maxLen {
+			constraint.addError(newError(StringMaxLengthError, path))
+		}
+	}
+
+	if minLen, ok := constraint.schema.MinLength(); ok {
+		if strLen < minLen {
+			constraint.addError(newError(StringMinLengthError, path))
+		}
+	}
+
+	if pattern, ok := constraint.schema.Pattern(); ok {
+		if !regexp.MustCompile(pattern).MatchString(str) {
+			constraint.addError(newError(StringPatternError, path))
+		}
+	}
 }
