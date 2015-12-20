@@ -16,6 +16,19 @@ const (
 	StringMinLengthError
 	StringMaxLengthError
 	StringPatternError
+
+	ArrayTypeMismatchError
+	ArrayMaxItemError
+	ArrayMinItemError
+	ArrayUniqueItemError
+	ArrayAdditionalItemError
+	ArrayItemError
+
+	TypeError
+	TypeNotMatchError
+	TypesNotMatchError
+
+	EnumError
 )
 
 type SchemaError interface {
