@@ -186,6 +186,18 @@ func (s Schema) OneOf() (all []Schema, exist bool) {
 	return
 }
 
+func (s Schema) Not() (not Schema, exist bool) {
+	v, exist := s["not"]
+	if !exist {
+		return
+	}
+
+	// v must be an object
+	exist = true
+	not = Schema(v.(map[string]interface{}))
+	return
+}
+
 // validation keywords for numeric
 
 func (s Schema) MultipleOf() (divided float64, exist bool) {

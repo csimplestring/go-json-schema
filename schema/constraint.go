@@ -181,5 +181,14 @@ func (b *baseConstraint) validateOneOf(v interface{}, path string) {
 }
 
 func (b *baseConstraint) validateNot(v interface{}, path string) {
+	not, exist := b.schema.Not()
+	if !exist {
+		return
+	}
 
+	c := NewBaseConstraint(not)
+	c.Validate(v, path)
+	if len(c.Errors()) == 0 {
+		b.addError(newError(NotError, path))
+	}
 }

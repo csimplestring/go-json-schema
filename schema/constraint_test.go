@@ -277,3 +277,38 @@ func TestOneOfConstraint(t *testing.T) {
 		assert.Equal(t, test.expected, c.Errors())
 	}
 }
+
+func TestNotConstraint(t *testing.T) {
+	tests := []struct {
+		schema   Schema
+		value    interface{}
+		expected []SchemaError
+	}{
+		{
+			schema: Schema{
+				"not": map[string]interface{}{
+					"type": "integer",
+				},
+			},
+			value:    json.Number("1.1"),
+			expected: nil,
+		},
+		{
+			schema: Schema{
+				"not": map[string]interface{}{
+					"type": "integer",
+				},
+			},
+			value: json.Number("1"),
+			expected: []SchemaError{
+				newError(NotError, "a"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		c := NewBaseConstraint(test.schema)
+		c.validateNot(test.value, "a")
+		assert.Equal(t, test.expected, c.Errors())
+	}
+}
