@@ -39,18 +39,6 @@ func TestNumericConstraint(t *testing.T) {
 				&schemaError{NumericMinimumError, "a"},
 			},
 		},
-		{
-			path: "a",
-			n:    "1",
-			schema: Schema{
-				"maximum":          json.Number("100.4"),
-				"exclusiveMaximum": true,
-			},
-
-			expected: []SchemaError{
-				&schemaError{NumericTypeMismatchError, "a"},
-			},
-		},
 	}
 
 	for _, test := range tests {

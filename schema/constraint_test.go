@@ -312,3 +312,25 @@ func TestNotConstraint(t *testing.T) {
 		assert.Equal(t, test.expected, c.Errors())
 	}
 }
+
+func TestBaseConstraint(t *testing.T) {
+	tests := []struct {
+		schema   Schema
+		value    interface{}
+		expected []SchemaError
+	}{
+		{
+			schema: Schema{
+				"type": "integer",
+			},
+			value:    json.Number("1"),
+			expected: nil,
+		},
+	}
+
+	for _, test := range tests {
+		c := NewBaseConstraint(test.schema)
+		c.Validate(test.value, "a")
+		assert.Equal(t, test.expected, c.Errors())
+	}
+}

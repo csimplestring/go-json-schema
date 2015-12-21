@@ -18,13 +18,7 @@ func NewNumericConstraint(schema Schema) *NumericConstraint {
 
 func (constraint *NumericConstraint) Validate(v interface{}, path string) {
 	schema := constraint.schema
-
-	n, ok := v.(json.Number)
-	if !ok {
-		constraint.addError(newError(NumericTypeMismatchError, path))
-	}
-
-	f, _ := n.Float64()
+	f, _ := v.(json.Number).Float64()
 
 	if divided, ok := schema.MultipleOf(); ok {
 		if math.Mod(f, divided) != float64(0) {

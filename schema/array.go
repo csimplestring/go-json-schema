@@ -17,22 +17,11 @@ func NewArrayConstraint(schema Schema) *ArrayConstraint {
 }
 
 func (constraint *ArrayConstraint) Validate(v interface{}, path string) {
-	arr, ok := v.([]interface{})
-	if !ok {
-		constraint.addError(newError(ArrayTypeMismatchError, path))
-	}
+	arr := v.([]interface{})
 
-	if !constraint.validateMaxItems(arr, path) {
-		return
-	}
-
-	if !constraint.validateMinItems(arr, path) {
-		return
-	}
-
-	if !constraint.validateUniqueItem(arr, path) {
-		return
-	}
+	constraint.validateMaxItems(arr, path)
+	constraint.validateMinItems(arr, path)
+	constraint.validateUniqueItem(arr, path)
 
 	schema, schemaArray, exist := constraint.schema.Items()
 	if !exist {
@@ -62,43 +51,34 @@ func (constraint *ArrayConstraint) Validate(v interface{}, path string) {
 	}
 }
 
-func (constraint *ArrayConstraint) validateMaxItems(items []interface{}, path string) bool {
+func (constraint *ArrayConstraint) validateMaxItems(items []interface{}, path string) {
 	if max, exist := constraint.schema.MaxItems(); exist {
 		if len(items) > max {
 			constraint.addError(newError(ArrayMaxItemError, path))
-			return false
 		}
 	}
-
-	return true
 }
 
-func (constraint *ArrayConstraint) validateMinItems(items []interface{}, path string) bool {
+func (constraint *ArrayConstraint) validateMinItems(items []interface{}, path string) {
 	if min, exist := constraint.schema.MinItems(); exist {
 		if len(items) < min {
 			constraint.addError(newError(ArrayMinItemError, path))
-			return false
 		}
 	}
-
-	return true
 }
 
-func (constraint *ArrayConstraint) validateUniqueItem(items []interface{}, path string) bool {
+func (constraint *ArrayConstraint) validateUniqueItem(items []interface{}, path string) {
 	length := len(items)
 	if length == 0 {
-		return true
+		return
 	}
 
 	one := items[0]
 	for i := 1; i < length; i++ {
 		if !reflect.DeepEqual(one, items[i]) {
 			constraint.addError(newError(ArrayUniqueItemError, path+fmt.Sprintf("[%d]", i)))
-			return false
 		}
 	}
-
-	return true
 }
 
 //

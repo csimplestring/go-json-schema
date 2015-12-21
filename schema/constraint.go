@@ -63,6 +63,8 @@ func (b *baseConstraint) Validate(v interface{}, path string) {
 	b.validateEnum(v, path)
 	b.validateAllOf(v, path)
 	b.validateAnyOf(v, path)
+	b.validateOneOf(v, path)
+	b.validateNot(v, path)
 
 	t, err := getJsonType(v)
 	if err != nil {
@@ -77,6 +79,9 @@ func (b *baseConstraint) Validate(v interface{}, path string) {
 		c = NewStringConstraint(b.schema)
 	case JsonArray:
 		c = NewArrayConstraint(b.schema)
+	default:
+		b.addError(newError(UndefinedTypeError, path))
+		return
 	}
 
 	c.Validate(v, path)

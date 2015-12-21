@@ -14,11 +14,7 @@ func NewStringConstraint(schema Schema) *StringConstraint {
 }
 
 func (constraint *StringConstraint) Validate(v interface{}, path string) {
-	str, ok := v.(string)
-	if !ok {
-		constraint.addError(newError(StringTypeMismatchError, path))
-	}
-
+	str := v.(string)
 	strLen := len(str)
 
 	if maxLen, ok := constraint.schema.MaxLength(); ok {
