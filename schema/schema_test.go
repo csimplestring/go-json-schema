@@ -7,6 +7,15 @@ import (
 	"testing"
 )
 
+func deserializeSchema(str string) (Schema, error) {
+	jsonSchema := make(Schema)
+	decoder := json.NewDecoder(strings.NewReader(str))
+	decoder.UseNumber()
+	err := decoder.Decode(&jsonSchema)
+
+	return jsonSchema, err
+}
+
 func TestNumericSchema(t *testing.T) {
 	jsonString := `
 	{
@@ -68,37 +77,30 @@ func TestStringSchema(t *testing.T) {
 }
 
 func TestArraySchema(t *testing.T) {
-	tests := []struct {
-		jsonString string
 
-		expectedItems           interface{}
-		expectedAdditionalItems interface{}
-		expectedMax             int
-		expectedMin             int
-		expectedUnique          bool
-	}{
+	// list
+	jsonString := `
 		{
-			jsonString: `
-			{
-				"maxItems": 5,
-				"minItems": 3,
-				"uniqueItems": true,
-				"items": {
-					"type": "integer"
-				},
-				"additionalItems": false
+			"items": {
+				"type": "integer"
 			}
-			`,
-			expectedItems: Schema{
-				"type": "integer",
-			},
-			expectedAdditionalItems: false,
-			expectedMax:             5,
-			expectedMin:             3,
-			expectedUnique:          true,
-		},
-		{
-			jsonString: `
+		}
+	`
+
+	expectedItem := Schema{
+		"type": "integer",
+	}
+
+	schema, err := deserializeSchema(jsonString)
+	assert.NoError(t, err)
+
+	actual, schemaArray, exist := schema.Items()
+	assert.Nil(t, schemaArray)
+	assert.True(t, exist)
+	assert.Equal(t, expectedItem, actual)
+
+	// tuple
+	jsonString = `
 			{
 				"items": [
 					{
@@ -107,63 +109,39 @@ func TestArraySchema(t *testing.T) {
 					{
 						"type": "number"
 					}
-				],
-				"additionalItems": {
-					"type": "integer"
-				}
+				]
 			}
-			`,
-			expectedItems: []Schema{
-				Schema{
-					"type": "integer",
-				},
-				Schema{
-					"type": "number",
-				},
-			},
-			expectedAdditionalItems: Schema{
-				"type": "integer",
-			},
-			expectedUnique: false,
+			`
+	expectedItems := []Schema{
+		Schema{
+			"type": "integer",
+		},
+		Schema{
+			"type": "number",
 		},
 	}
 
-	for _, test := range tests {
-		jsonSchema := make(Schema)
-		decoder := json.NewDecoder(strings.NewReader(test.jsonString))
-		decoder.UseNumber()
+	schema, err = deserializeSchema(jsonString)
+	assert.NoError(t, err)
 
-		err := decoder.Decode(&jsonSchema)
-		assert.NoError(t, err)
+	single, schemaArray, exist := schema.Items()
+	assert.Nil(t, single)
+	assert.True(t, exist)
+	assert.Equal(t, expectedItems, schemaArray)
 
-		schema, schemaArray, exist := jsonSchema.Items()
-		if exist {
-			if schema != nil {
-				assert.Equal(t, test.expectedItems, schema)
-			} else {
-				assert.Equal(t, test.expectedItems, schemaArray)
+	// additional item
+	jsonString = `
+			{
+				"additionalItems": true
 			}
-		}
+			`
 
-		schema, boolValue, exist := jsonSchema.AdditionalItems()
-		if exist {
-			if schema == nil {
-				assert.Equal(t, test.expectedAdditionalItems, boolValue)
-			} else {
-				assert.Equal(t, test.expectedAdditionalItems, schema)
-			}
-		}
-
-		if max, exist := jsonSchema.MaxItems(); exist {
-			assert.Equal(t, test.expectedMax, max)
-		}
-
-		if min, exist := jsonSchema.MinItems(); exist {
-			assert.Equal(t, test.expectedMin, min)
-		}
-
-		assert.Equal(t, test.expectedUnique, jsonSchema.UniqueItems())
-	}
+	schema, err = deserializeSchema(jsonString)
+	assert.NoError(t, err)
+	additionSchema, isAllowAddition, existAddition := schema.AdditionalItems()
+	assert.True(t, existAddition)
+	assert.Nil(t, additionSchema)
+	assert.True(t, isAllowAddition)
 }
 
 func TestSchemaType(t *testing.T) {

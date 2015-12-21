@@ -243,10 +243,8 @@ func (s Schema) Pattern() (pattern string, exist bool) {
 // validation keywords for array
 
 func (s Schema) AdditionalItems() (schema Schema, boolValue bool, exist bool) {
-	exist = false
-
-	v, ok := s["additionalItems"]
-	if !ok {
+	v, exist := s["additionalItems"]
+	if !exist {
 		return
 	}
 
@@ -265,22 +263,21 @@ func (s Schema) AdditionalItems() (schema Schema, boolValue bool, exist bool) {
 }
 
 func (s Schema) Items() (schema Schema, schemaArray []Schema, exist bool) {
-	schema, schemaArray, exist = nil, nil, false
-
-	v, ok := s["items"]
-	if !ok {
+	v, exist := s["items"]
+	if !exist {
 		return
 	}
 
+	// item can be an object or an array of objects
 	switch v.(type) {
 	case map[string]interface{}:
 		exist = true
 		schema = Schema(v.(map[string]interface{}))
 		return
-	case []map[string]interface{}:
+	case []interface{}:
 		exist = true
-		for _, itemSchema := range v.([]map[string]interface{}) {
-			schemaArray = append(schemaArray, itemSchema)
+		for _, item := range v.([]interface{}) {
+			schemaArray = append(schemaArray, Schema(item.(map[string]interface{})))
 		}
 		return
 	default:

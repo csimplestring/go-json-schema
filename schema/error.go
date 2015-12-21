@@ -23,6 +23,7 @@ const (
 	ArrayUniqueItemError     = ErrorCode("uniqueItem")
 	ArrayAdditionalItemError = ErrorCode("additionalItem")
 	ArrayItemError           = ErrorCode("item")
+	ArrayItem
 
 	TypeError          = ErrorCode("type")
 	TypeNotMatchError  = ErrorCode("not match type")

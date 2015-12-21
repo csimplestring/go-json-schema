@@ -23,32 +23,6 @@ func (constraint *ArrayConstraint) Validate(v interface{}, path string) {
 	constraint.validateMinItems(arr, path)
 	constraint.validateUniqueItem(arr, path)
 
-	schema, schemaArray, exist := constraint.schema.Items()
-	if !exist {
-		return
-	}
-
-	if schema != nil {
-		// list validation
-		return
-	}
-
-	if schemaArray != nil {
-		additionalItemSchema, boolValue, hasAdditional := constraint.schema.AdditionalItems()
-		if !hasAdditional {
-			// tuple validation
-		}
-
-		if additionalItemSchema != nil {
-			// validate additional element
-		} else if true == boolValue {
-			// always succeeds
-		} else if false == boolValue {
-			if len(arr) > len(schemaArray) {
-				return
-			}
-		}
-	}
 }
 
 func (constraint *ArrayConstraint) validateMaxItems(items []interface{}, path string) {
@@ -81,16 +55,58 @@ func (constraint *ArrayConstraint) validateUniqueItem(items []interface{}, path 
 	}
 }
 
-//
-//func (constraint *ArrayConstraint) validateItems(items []interface{}, path string) bool {
-//	listSchema, tupleSchema, exist := constraint.schema.Items()
-//	if !exist {
-//		return true
-//	}
-//}
-//
-//func (constraint *ArrayConstraint) validateListItems(itemSchema Schema, items []interface{}, path string) bool {
-//	for _, item :=range items {
-//		constraint.baseConstraint.Validate(itemSchema, item, path)
-//	}
-//}
+func (constraint *ArrayConstraint) validateItems(items []interface{}, path string) {
+	listSchema, itemSchemas, exist := constraint.schema.Items()
+	if !exist {
+		return
+	}
+
+	// list validation
+	if listSchema != nil && itemSchemas == nil {
+		c := NewBaseConstraint(listSchema)
+		for i, item := range items {
+			c.Validate(item, fmt.Sprintf("%s[%d]", path, i))
+		}
+		constraint.addErrors(c.Errors())
+		return
+	}
+
+	// tuple validation
+	additionSchema, isAllowAddition, existAddition := constraint.schema.AdditionalItems()
+	itemSchemaSize := len(itemSchemas)
+
+	for i, item := range items {
+		subPath := fmt.Sprintf("%s[%d]", path, i)
+
+		if i >= itemSchemaSize {
+			// additional schema not exists
+			if !existAddition {
+				constraint.addError(newError(ArrayAdditionalItemError, subPath))
+				continue
+			}
+
+			// additional schema is object
+			if existAddition && additionSchema != nil {
+				c := NewBaseConstraint(additionSchema)
+				c.Validate(item, subPath)
+				constraint.addErrors(c.Errors())
+				continue
+			}
+
+			// additional schema is true
+			if existAddition && additionSchema == nil && isAllowAddition {
+				continue
+			}
+
+			// additional schema is false
+			if existAddition && additionSchema == nil && !isAllowAddition {
+				constraint.addError(newError(ArrayAdditionalItemError, subPath))
+				continue
+			}
+		}
+
+		c := NewBaseConstraint(itemSchemas[i])
+		c.Validate(item, subPath)
+		constraint.addErrors(c.Errors())
+	}
+}
