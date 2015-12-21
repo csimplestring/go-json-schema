@@ -226,3 +226,54 @@ func TestAnyOfConstraint(t *testing.T) {
 		assert.Equal(t, test.expected, c.Errors())
 	}
 }
+
+func TestOneOfConstraint(t *testing.T) {
+	tests := []struct {
+		schema   Schema
+		value    interface{}
+		expected []SchemaError
+	}{
+		{
+			schema: Schema{
+				"oneOf": []interface{}{
+					map[string]interface{}{
+						"type": "integer",
+					},
+					map[string]interface{}{
+						"enum": []interface{}{
+							json.Number("1.2"),
+							json.Number("2.1"),
+						},
+					},
+				},
+			},
+			value:    json.Number("1"),
+			expected: nil,
+		},
+		{
+			schema: Schema{
+				"oneOf": []interface{}{
+					map[string]interface{}{
+						"type": "number",
+					},
+					map[string]interface{}{
+						"enum": []interface{}{
+							json.Number("1.2"),
+							json.Number("2.1"),
+						},
+					},
+				},
+			},
+			value: json.Number("1.2"),
+			expected: []SchemaError{
+				newError(OneOfError, "a"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		c := NewBaseConstraint(test.schema)
+		c.validateOneOf(test.value, "a")
+		assert.Equal(t, test.expected, c.Errors())
+	}
+}

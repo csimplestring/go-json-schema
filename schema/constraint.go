@@ -160,7 +160,24 @@ func (b *baseConstraint) validateAnyOf(v interface{}, path string) {
 }
 
 func (b *baseConstraint) validateOneOf(v interface{}, path string) {
-	
+	all, exist := b.schema.OneOf()
+	if !exist {
+		return
+	}
+
+	i := 0
+	for _, one := range all {
+		c := NewBaseConstraint(one)
+		c.Validate(v, path)
+
+		if len(c.Errors()) == 0 {
+			i++
+		}
+	}
+
+	if i != 1 {
+		b.addError(newError(OneOfError, path))
+	}
 }
 
 func (b *baseConstraint) validateNot(v interface{}, path string) {

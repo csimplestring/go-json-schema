@@ -32,6 +32,7 @@ const (
 
 	AllOfError = ErrorCode("allOf")
 	AnyOfError = ErrorCode("anyOf")
+	OneOfError = ErrorCode("oneOf")
 
 	UndefinedTypeError = ErrorCode("undefined type")
 )

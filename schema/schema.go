@@ -172,6 +172,20 @@ func (s Schema) AnyOf() (any []Schema, exist bool) {
 	return
 }
 
+func (s Schema) OneOf() (all []Schema, exist bool) {
+	v, exist := s["oneOf"]
+	if !exist {
+		return
+	}
+
+	// v must be an array of valid schema
+	exist = true
+	for _, one := range v.([]interface{}) {
+		all = append(all, Schema(one.(map[string]interface{})))
+	}
+	return
+}
+
 // validation keywords for numeric
 
 func (s Schema) MultipleOf() (divided float64, exist bool) {
