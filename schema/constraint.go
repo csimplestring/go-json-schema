@@ -62,24 +62,25 @@ func (b *baseConstraint) Validate(v interface{}, path string) {
 	b.validateType(v, path)
 	b.validateEnum(v, path)
 	b.validateAllOf(v, path)
+	b.validateAnyOf(v, path)
 
-	//	t, err := getJsonType(v)
-	//	if err != nil {
-	//		b.addError(newError(UndefinedTypeError, path))
-	//	}
-	//
-	//	var c Constraint
-	//	switch t {
-	//	case JsonInteger, JsonNumber:
-	//		c = NewNumericConstraint(b.schema)
-	//	case JsonString:
-	//		c = NewStringConstraint(b.schema)
-	//	case JsonArray:
-	//		c = NewArrayConstraint(b.schema)
-	//	}
-	//
-	//	c.Validate(v, path)
-	//	b.addErrors(c.Errors())
+	t, err := getJsonType(v)
+	if err != nil {
+		b.addError(newError(UndefinedTypeError, path))
+	}
+
+	var c Constraint
+	switch t {
+	case JsonInteger, JsonNumber:
+		c = NewNumericConstraint(b.schema)
+	case JsonString:
+		c = NewStringConstraint(b.schema)
+	case JsonArray:
+		c = NewArrayConstraint(b.schema)
+	}
+
+	c.Validate(v, path)
+	b.addErrors(c.Errors())
 }
 
 func (b *baseConstraint) validateType(v interface{}, path string) {
@@ -141,11 +142,25 @@ func (b *baseConstraint) validateAllOf(v interface{}, path string) {
 }
 
 func (b *baseConstraint) validateAnyOf(v interface{}, path string) {
+	any, exist := b.schema.AnyOf()
+	if !exist {
+		return
+	}
 
+	for _, one := range any {
+		c := NewBaseConstraint(one)
+		c.Validate(v, path)
+
+		if len(c.Errors()) == 0 {
+			return
+		}
+	}
+
+	b.addError(newError(AnyOfError, path))
 }
 
 func (b *baseConstraint) validateOneOf(v interface{}, path string) {
-
+	
 }
 
 func (b *baseConstraint) validateNot(v interface{}, path string) {

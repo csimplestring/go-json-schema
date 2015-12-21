@@ -134,10 +134,8 @@ func (s Schema) Type() (jsonType JsonType, jsonTypes []JsonType, exist bool) {
 }
 
 func (s Schema) Enum() (enums []interface{}, exist bool) {
-	exist = false
-
-	v, ok := s["enum"]
-	if !ok {
+	v, exist := s["enum"]
+	if !exist {
 		return
 	}
 
@@ -156,6 +154,20 @@ func (s Schema) AllOf() (all []Schema, exist bool) {
 	exist = true
 	for _, one := range v.([]interface{}) {
 		all = append(all, Schema(one.(map[string]interface{})))
+	}
+	return
+}
+
+func (s Schema) AnyOf() (any []Schema, exist bool) {
+	v, exist := s["anyOf"]
+	if !exist {
+		return
+	}
+
+	// v must be an array of valid schema
+	exist = true
+	for _, one := range v.([]interface{}) {
+		any = append(any, Schema(one.(map[string]interface{})))
 	}
 	return
 }

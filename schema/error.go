@@ -31,6 +31,7 @@ const (
 	EnumError = ErrorCode("enum")
 
 	AllOfError = ErrorCode("allOf")
+	AnyOfError = ErrorCode("anyOf")
 
 	UndefinedTypeError = ErrorCode("undefined type")
 )
