@@ -1,38 +1,38 @@
 package schema
+
 import "fmt"
 
-type ErrorCode int
+type ErrorCode string
 
 const (
+	NumericMultipleOfError       = ErrorCode("multipleOf")
+	NumericTypeMismatchError     = ErrorCode("number type")
+	NumericMaximumError          = ErrorCode("maximum")
+	NumericExclusiveMaximumError = ErrorCode("exclusiveMaximum")
+	NumericMinimumError          = ErrorCode("minimum")
+	NumericExclusiveMinimumError = ErrorCode("exclusiveMinimum")
 
-	NumericMultipleOfError ErrorCode = iota
-	NumericTypeMismatchError
-	NumericMaximumError
-	NumericExclusiveMaximumError
-	NumericMinimumError
-	NumericExclusiveMinimumError
+	StringTypeMismatchError = ErrorCode("string type")
+	StringMinLengthError    = ErrorCode("minLength")
+	StringMaxLengthError    = ErrorCode("maxLength")
+	StringPatternError      = ErrorCode("pattern")
 
-	StringTypeMismatchError
-	StringMinLengthError
-	StringMaxLengthError
-	StringPatternError
+	ArrayTypeMismatchError   = ErrorCode("array type")
+	ArrayMaxItemError        = ErrorCode("maxItems")
+	ArrayMinItemError        = ErrorCode("minItems")
+	ArrayUniqueItemError     = ErrorCode("uniqueItem")
+	ArrayAdditionalItemError = ErrorCode("additionalItem")
+	ArrayItemError           = ErrorCode("item")
 
-	ArrayTypeMismatchError
-	ArrayMaxItemError
-	ArrayMinItemError
-	ArrayUniqueItemError
-	ArrayAdditionalItemError
-	ArrayItemError
+	TypeError          = ErrorCode("type")
+	TypeNotMatchError  = ErrorCode("not match type")
+	TypesNotMatchError = ErrorCode("not match one of types")
 
-	TypeError
-	TypeNotMatchError
-	TypesNotMatchError
+	EnumError = ErrorCode("enum")
 
-	EnumError
+	AllOfError = ErrorCode("allOf")
 
-	AllOfError
-
-	UndefinedTypeError
+	UndefinedTypeError = ErrorCode("undefined type")
 )
 
 type SchemaError interface {
@@ -41,7 +41,7 @@ type SchemaError interface {
 	Path() string
 }
 
-type schemaError struct  {
+type schemaError struct {
 	code ErrorCode
 	path string
 }
@@ -59,6 +59,5 @@ func (s *schemaError) Path() string {
 }
 
 func (s *schemaError) Error() string {
-	return fmt.Sprintf("%d %s", s.Code, s.Path)
+	return fmt.Sprintf("Error: %s, Path: %s", s.Code(), s.Path())
 }
-

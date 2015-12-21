@@ -1,4 +1,5 @@
 package schema
+
 import "regexp"
 
 type StringConstraint struct {

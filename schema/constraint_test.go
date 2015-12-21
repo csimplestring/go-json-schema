@@ -1,34 +1,35 @@
 package schema
+
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"encoding/json"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-
 func TestTypeConstraint(t *testing.T) {
-	tests := []struct{
-		schema Schema
-		value interface{}
+	tests := []struct {
+		schema   Schema
+		value    interface{}
 		expected []SchemaError
 	}{
 		{
-			schema: Schema{},
-			value: 1,
+			schema:   Schema{},
+			value:    1,
 			expected: nil,
 		},
 		{
 			schema: Schema{
 				"type": "integer",
 			},
-			value: 1,
+			value:    1,
 			expected: nil,
 		},
 		{
 			schema: Schema{
 				"type": []interface{}{"integer", "string"},
 			},
-			value: "str",
+			value:    "str",
 			expected: nil,
 		},
 		{
@@ -59,16 +60,16 @@ func TestTypeConstraint(t *testing.T) {
 }
 
 func TestEnumConstraint(t *testing.T) {
-	tests := []struct{
-		schema Schema
-		value interface{}
+	tests := []struct {
+		schema   Schema
+		value    interface{}
 		expected []SchemaError
 	}{
 		{
 			schema: Schema{
 				"enum": []interface{}{json.Number("1")},
 			},
-			value: json.Number("1"),
+			value:    json.Number("1"),
 			expected: nil,
 		},
 		{
@@ -79,7 +80,7 @@ func TestEnumConstraint(t *testing.T) {
 					"str",
 				},
 			},
-			value: json.Number("1.2"),
+			value:    json.Number("1.2"),
 			expected: nil,
 		},
 		{
@@ -105,36 +106,36 @@ func TestEnumConstraint(t *testing.T) {
 }
 
 func TestAllOfConstraint(t *testing.T) {
-	tests := []struct{
-		schema Schema
-		value interface{}
+	tests := []struct {
+		schema   Schema
+		value    interface{}
 		expected []SchemaError
 	}{
 		{
 			schema: Schema{
-				"allOf": []interface{} {
-					map[string]interface{} {
+				"allOf": []interface{}{
+					map[string]interface{}{
 						"type": "integer",
 					},
-					map[string]interface{} {
-						"enum": []interface{} {
+					map[string]interface{}{
+						"enum": []interface{}{
 							json.Number("1"),
 							json.Number("2"),
 						},
 					},
 				},
 			},
-			value: json.Number("1"),
+			value:    json.Number("1"),
 			expected: nil,
 		},
 		{
 			schema: Schema{
-				"allOf": []interface{} {
-					map[string]interface{} {
+				"allOf": []interface{}{
+					map[string]interface{}{
 						"type": "integer",
 					},
-					map[string]interface{} {
-						"enum": []interface{} {
+					map[string]interface{}{
+						"enum": []interface{}{
 							json.Number("1"),
 							json.Number("2"),
 						},
@@ -148,12 +149,12 @@ func TestAllOfConstraint(t *testing.T) {
 		},
 		{
 			schema: Schema{
-				"allOf": []interface{} {
-					map[string]interface{} {
+				"allOf": []interface{}{
+					map[string]interface{}{
 						"type": "integer",
 					},
-					map[string]interface{} {
-						"enum": []interface{} {
+					map[string]interface{}{
+						"enum": []interface{}{
 							json.Number("1"),
 							json.Number("2"),
 						},

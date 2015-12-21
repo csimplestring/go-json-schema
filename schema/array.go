@@ -1,7 +1,8 @@
 package schema
+
 import (
-	"reflect"
 	"fmt"
+	"reflect"
 )
 
 type ArrayConstraint struct {
@@ -92,13 +93,14 @@ func (constraint *ArrayConstraint) validateUniqueItem(items []interface{}, path 
 	one := items[0]
 	for i := 1; i < length; i++ {
 		if !reflect.DeepEqual(one, items[i]) {
-			constraint.addError(newError(ArrayUniqueItemError, path + fmt.Sprintf("[%d]", i)))
+			constraint.addError(newError(ArrayUniqueItemError, path+fmt.Sprintf("[%d]", i)))
 			return false
 		}
 	}
 
 	return true
 }
+
 //
 //func (constraint *ArrayConstraint) validateItems(items []interface{}, path string) bool {
 //	listSchema, tupleSchema, exist := constraint.schema.Items()

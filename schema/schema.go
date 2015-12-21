@@ -1,4 +1,5 @@
 package schema
+
 import (
 	"encoding/json"
 	"fmt"
@@ -21,12 +22,12 @@ type JsonType string
 
 const (
 	JsonInteger = JsonType("integer")
-	JsonNumber = JsonType("number")
-	JsonString = JsonType("string")
-	JsonArray = JsonType("array")
-	JsonObject = JsonType("object")
+	JsonNumber  = JsonType("number")
+	JsonString  = JsonType("string")
+	JsonArray   = JsonType("array")
+	JsonObject  = JsonType("object")
 	JsonBoolean = JsonType("boolean")
-	JsonNull = JsonType("null")
+	JsonNull    = JsonType("null")
 )
 
 func getJsonType(v interface{}) (JsonType, error) {

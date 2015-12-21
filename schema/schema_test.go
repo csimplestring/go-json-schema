@@ -1,12 +1,13 @@
 package schema
+
 import (
-	"testing"
+	"code.yieldr.com/px/util/test/assert"
 	"encoding/json"
 	"strings"
-	"code.yieldr.com/px/util/test/assert"
+	"testing"
 )
 
-func TestNumericSchema(t*testing.T) {
+func TestNumericSchema(t *testing.T) {
 	jsonString := `
 	{
 		"multipleOf": 123,
@@ -37,7 +38,7 @@ func TestNumericSchema(t*testing.T) {
 	assert.True(t, exist)
 }
 
-func TestStringSchema(t*testing.T) {
+func TestStringSchema(t *testing.T) {
 	jsonString := `
 	{
 		"maxLength": 10,
@@ -68,7 +69,7 @@ func TestStringSchema(t*testing.T) {
 
 func TestArraySchema(t *testing.T) {
 	tests := []struct {
-		jsonString              string
+		jsonString string
 
 		expectedItems           interface{}
 		expectedAdditionalItems interface{}
@@ -77,7 +78,7 @@ func TestArraySchema(t *testing.T) {
 		expectedUnique          bool
 	}{
 		{
-			jsonString : `
+			jsonString: `
 			{
 				"maxItems": 5,
 				"minItems": 3,
@@ -92,12 +93,12 @@ func TestArraySchema(t *testing.T) {
 				"type": "integer",
 			},
 			expectedAdditionalItems: false,
-			expectedMax: 5,
-			expectedMin: 3,
-			expectedUnique: true,
+			expectedMax:             5,
+			expectedMin:             3,
+			expectedUnique:          true,
 		},
 		{
-			jsonString : `
+			jsonString: `
 			{
 				"items": [
 					{

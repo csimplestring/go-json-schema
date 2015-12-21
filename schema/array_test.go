@@ -1,8 +1,9 @@
 package schema
+
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestArrayConstraintUniqueItems(t *testing.T) {
@@ -26,18 +27,18 @@ func TestArrayConstraintUniqueItems(t *testing.T) {
 		},
 		{
 			input: []interface{}{
-				map[string]interface{} {},
-				map[string]interface{} {},
+				map[string]interface{}{},
+				map[string]interface{}{},
 			},
 			expectedErrors: nil,
 		},
 		{
 			input: []interface{}{
-				map[string]interface{} {
+				map[string]interface{}{
 					"a": 1,
 					"b": 2,
 				},
-				map[string]interface{} {
+				map[string]interface{}{
 					"a": 1,
 					"b": 2,
 				},
@@ -46,17 +47,17 @@ func TestArrayConstraintUniqueItems(t *testing.T) {
 		},
 		{
 			input: []interface{}{
-				map[string]interface{} {
+				map[string]interface{}{
 					"a": 1,
 					"b": 2,
 				},
-				map[string]interface{} {
+				map[string]interface{}{
 					"a": 1,
 					"b": 2,
 					"c": 3,
 				},
 			},
-			expectedErrors: []SchemaError {
+			expectedErrors: []SchemaError{
 				&schemaError{ArrayUniqueItemError, "a[1]"},
 			},
 		},

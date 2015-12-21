@@ -1,4 +1,5 @@
 package schema
+
 import (
 	"encoding/json"
 	"math"
