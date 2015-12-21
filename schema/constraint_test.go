@@ -13,6 +13,11 @@ func TestTypeConstraint(t *testing.T) {
 		expected []SchemaError
 	}{
 		{
+			schema: Schema{},
+			value: 1,
+			expected: nil,
+		},
+		{
 			schema: Schema{
 				"type": "integer",
 			},
@@ -95,6 +100,77 @@ func TestEnumConstraint(t *testing.T) {
 	for _, test := range tests {
 		c := NewBaseConstraint(test.schema)
 		c.validateEnum(test.value, "a")
+		assert.Equal(t, test.expected, c.Errors())
+	}
+}
+
+func TestAllOfConstraint(t *testing.T) {
+	tests := []struct{
+		schema Schema
+		value interface{}
+		expected []SchemaError
+	}{
+		{
+			schema: Schema{
+				"allOf": []interface{} {
+					map[string]interface{} {
+						"type": "integer",
+					},
+					map[string]interface{} {
+						"enum": []interface{} {
+							json.Number("1"),
+							json.Number("2"),
+						},
+					},
+				},
+			},
+			value: json.Number("1"),
+			expected: nil,
+		},
+		{
+			schema: Schema{
+				"allOf": []interface{} {
+					map[string]interface{} {
+						"type": "integer",
+					},
+					map[string]interface{} {
+						"enum": []interface{} {
+							json.Number("1"),
+							json.Number("2"),
+						},
+					},
+				},
+			},
+			value: json.Number("3"),
+			expected: []SchemaError{
+				newError(AllOfError, "a"),
+			},
+		},
+		{
+			schema: Schema{
+				"allOf": []interface{} {
+					map[string]interface{} {
+						"type": "integer",
+					},
+					map[string]interface{} {
+						"enum": []interface{} {
+							json.Number("1"),
+							json.Number("2"),
+						},
+					},
+				},
+			},
+			value: json.Number("1.3"),
+			expected: []SchemaError{
+				newError(AllOfError, "a"),
+				newError(AllOfError, "a"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		c := NewBaseConstraint(test.schema)
+		c.validateAllOf(test.value, "a")
 		assert.Equal(t, test.expected, c.Errors())
 	}
 }

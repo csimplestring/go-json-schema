@@ -109,13 +109,15 @@ func (s Schema) getStringValue(key string) (value string, exist bool) {
 
 // validation keywords for any instance
 
-func (s Schema) Type() (jsonType JsonType, jsonTypes []JsonType) {
+func (s Schema) Type() (jsonType JsonType, jsonTypes []JsonType, exist bool) {
+	exist = false
 	v, ok := s["type"]
 
 	if !ok {
 		return
 	}
 
+	exist = true
 	switch v.(type) {
 	case string:
 		jsonType = JsonType(v.(string))
@@ -140,6 +142,20 @@ func (s Schema) Enum() (enums []interface{}, exist bool) {
 
 	exist = true
 	enums = v.([]interface{})
+	return
+}
+
+func (s Schema) AllOf() (all []Schema, exist bool) {
+	v, exist := s["allOf"]
+	if !exist {
+		return
+	}
+
+	// v must be an array of valid schema
+	exist = true
+	for _, one := range v.([]interface{}) {
+		all = append(all, Schema(one.(map[string]interface{})))
+	}
 	return
 }
 

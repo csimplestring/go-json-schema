@@ -196,7 +196,7 @@ func TestSchemaType(t *testing.T) {
 		err := decoder.Decode(&jsonSchema)
 		assert.NoError(t, err)
 
-		actualType, actualTypes := jsonSchema.Type()
+		actualType, actualTypes, _ := jsonSchema.Type()
 		if actualType != "" {
 			assert.Equal(t, test.expectedType, actualType)
 		} else if actualTypes != nil {
@@ -240,5 +240,47 @@ func TestSchemaEnum(t *testing.T) {
 
 		actual, _ := jsonSchema.Enum()
 		assert.Equal(t, test.expectedEnum, actual)
+	}
+}
+
+func TestSchemaAllOf(t *testing.T) {
+	tests := []struct {
+		jsonString    string
+		expectedAllOf []Schema
+	}{
+		{
+			jsonString: `
+			{
+				"allOf": [
+					{
+						"type": "integer"
+					},
+					{
+						"type": "string"
+					}
+				]
+			}
+			`,
+			expectedAllOf: []Schema{
+				Schema{
+					"type": "integer",
+				},
+				Schema{
+					"type": "string",
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		jsonSchema := make(Schema)
+		decoder := json.NewDecoder(strings.NewReader(test.jsonString))
+		decoder.UseNumber()
+
+		err := decoder.Decode(&jsonSchema)
+		assert.NoError(t, err)
+
+		actual, _ := jsonSchema.AllOf()
+		assert.Equal(t, test.expectedAllOf, actual)
 	}
 }

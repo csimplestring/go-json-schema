@@ -29,6 +29,10 @@ const (
 	TypesNotMatchError
 
 	EnumError
+
+	AllOfError
+
+	UndefinedTypeError
 )
 
 type SchemaError interface {
