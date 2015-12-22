@@ -22,7 +22,7 @@ func (constraint *ArrayConstraint) Validate(v interface{}, path string) {
 	constraint.validateMaxItems(arr, path)
 	constraint.validateMinItems(arr, path)
 	constraint.validateUniqueItem(arr, path)
-
+	constraint.validateItems(arr, path)
 }
 
 func (constraint *ArrayConstraint) validateMaxItems(items []interface{}, path string) {

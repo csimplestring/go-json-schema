@@ -299,3 +299,43 @@ func (s Schema) UniqueItems() bool {
 	}
 	return false
 }
+
+// validation keywords for object
+
+func (s Schema) MaxProperties() (maxProperties int, exist bool) {
+	return s.getIntValue("maxProperties")
+}
+
+func (s Schema) MinProperties() (minProperties int, exist bool) {
+	return s.getIntValue("minProperties")
+}
+
+func (s Schema) Required() (required []string, exist bool) {
+	v, exist := s["required"]
+	if !exist {
+		return
+	}
+
+	for _, r := range v.([]interface{}) {
+		required = append(required, r.(string))
+	}
+
+	return
+}
+
+func (s Schema) Properties() (propertiesSchema map[string]Schema, exist bool) {
+	v, exist := s["properties"]
+	if !exist {
+		return
+	}
+
+	for key, val := range v.(map[string]interface{}) {
+		propertiesSchema[key] = Schema(val.(map[string]interface{}))
+	}
+
+	return
+}
+
+func (s Schema) AdditionalProperties()  {
+	
+}
