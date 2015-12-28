@@ -57,6 +57,10 @@ func getJsonType(v interface{}) (JsonType, error) {
 	}
 }
 
+type SchemaInterface interface {
+	Validate(v interface{}, path string, interactive bool) error
+}
+
 type Schema map[string]interface{}
 
 func (s Schema) getFloat64Value(key string) (value float64, exist bool) {
@@ -323,12 +327,15 @@ func (s Schema) Required() (required []string, exist bool) {
 	return
 }
 
+// properties returns a map where the key is the property name and the value
+// is a valid json schema for this property.
 func (s Schema) Properties() (propertiesSchema map[string]Schema, exist bool) {
 	v, exist := s["properties"]
 	if !exist {
 		return
 	}
 
+	propertiesSchema = make(map[string]Schema)
 	for key, val := range v.(map[string]interface{}) {
 		propertiesSchema[key] = Schema(val.(map[string]interface{}))
 	}
@@ -336,6 +343,42 @@ func (s Schema) Properties() (propertiesSchema map[string]Schema, exist bool) {
 	return
 }
 
-func (s Schema) AdditionalProperties()  {
-	
+// The value of "additionalProperties" MUST be a boolean or an object.
+// If it is an object, it MUST also be a valid JSON Schema.
+func (s Schema) AdditionalProperties() (additionSchema Schema, boolValue bool, exist bool) {
+	v, exist := s["additionalProperties"]
+	if !exist {
+		return
+	}
+
+	switch v.(type) {
+	case bool:
+		boolValue = v.(bool)
+		return
+	case map[string]interface{}:
+		additionSchema = Schema(v.(map[string]interface{}))
+		return
+	default:
+		return
+	}
+}
+
+func (s Schema) PatternProperties() (patternSchema PatternProperties, exist bool) {
+	v, exist := s["patternProperties"]
+	if !exist {
+		return
+	}
+
+	patternSchema = make(PatternProperties)
+	for key, val := range v.(map[string]interface{}) {
+		patternSchema[key] = Schema(val.(map[string]interface{}))
+	}
+
+	return
+}
+
+type PatternProperties map[string]Schema
+
+func (p PatternProperties) match(prop string, val interface{}) bool {
+
 }

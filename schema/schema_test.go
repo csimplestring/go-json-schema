@@ -76,6 +76,101 @@ func TestStringSchema(t *testing.T) {
 	assert.True(t, exist)
 }
 
+func TestObjectSchema(t *testing.T) {
+	// common
+	jsonString := `
+	{
+		"maxProperties": 10,
+		"minProperties": 2,
+		"required": ["a", "b"],
+		"properties": {
+			"a": {
+				"type": "integer"
+			},
+			"b": {
+				"type": "integer"
+			}
+		},
+		"patternProperties": {
+			"a[0-9]b": {
+				"type": "integer"
+			}
+		}
+	}
+	`
+
+	schema, err := deserializeSchema(jsonString)
+	assert.NoError(t, err)
+
+	max, exist := schema.MaxProperties()
+	assert.Equal(t, true, exist)
+	assert.Equal(t, 10, max)
+
+	min, exist := schema.MinProperties()
+	assert.Equal(t, true, exist)
+	assert.Equal(t, 2, min)
+
+	required, exist := schema.Required()
+	assert.Equal(t, true, exist)
+	assert.Equal(t, []string{"a", "b"}, required)
+
+	prop, exist := schema.Properties()
+	assert.Equal(t, true, exist)
+	assert.Equal(t, map[string]Schema{
+		"a": Schema{"type": "integer"},
+		"b": Schema{"type": "integer"},
+	}, prop)
+
+	pattern, exist := schema.PatternProperties()
+	assert.Equal(t, true, exist)
+	assert.Equal(t, map[string]Schema{
+		"a[0-9]b": Schema{"type": "integer"},
+	}, pattern)
+
+	// test for additionalProperties
+	tests := []struct {
+		input                  string
+		expectedAdditionSchema Schema
+		expectedBool           bool
+		expectedExist          bool
+	}{
+		{
+			input: `
+			{
+				"additionalProperties": false
+			}
+			`,
+			expectedAdditionSchema: Schema(nil),
+			expectedBool: false,
+			expectedExist: true,
+		},
+		{
+			input: `
+			{
+				"additionalProperties": {
+					"type": "integer"
+				}
+			}
+			`,
+			expectedAdditionSchema: Schema{
+				"type": "integer",
+			},
+			expectedBool: false,
+			expectedExist: true,
+		},
+	}
+
+	for _, test := range tests {
+		s, err := deserializeSchema(test.input)
+		assert.NoError(t, err)
+
+		addition, b, exist := s.AdditionalProperties()
+		assert.Equal(t, test.expectedAdditionSchema, addition)
+		assert.Equal(t, test.expectedBool, b)
+		assert.Equal(t, test.expectedExist, exist)
+	}
+}
+
 func TestArraySchema(t *testing.T) {
 
 	// list

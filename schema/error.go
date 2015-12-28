@@ -25,6 +25,11 @@ const (
 	ArrayItemError           = ErrorCode("item")
 	ArrayItem
 
+	ObjectMaxPropertiesError      = ErrorCode("max properties")
+	ObjectMinPropertiesError      = ErrorCode("min properties")
+	ObjectRequiredPropertiesError = ErrorCode("required properties")
+	ObjectUndefinedPropertyError = ErrorCode("undifined property")
+
 	TypeError          = ErrorCode("type")
 	TypeNotMatchError  = ErrorCode("not match type")
 	TypesNotMatchError = ErrorCode("not match one of types")
