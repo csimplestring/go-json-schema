@@ -73,11 +73,11 @@ func (b *baseConstraint) Validate(v interface{}, path string) {
 
 	var c Constraint
 	switch t {
-	case JsonInteger, JsonNumber:
+	case JsonTypeInteger, JsonTypeNumber:
 		c = NewNumericConstraint(b.schema)
-	case JsonString:
+	case JsonTypeString:
 		c = NewStringConstraint(b.schema)
-	case JsonArray:
+	case JsonTypeArray:
 		c = NewArrayConstraint(b.schema)
 	default:
 		b.addError(newError(UndefinedTypeError, path))
@@ -94,21 +94,21 @@ func (b *baseConstraint) validateType(v interface{}, path string) {
 		b.addError(newError(TypeError, path))
 	}
 
-	expectedType, expectedTypes, exist := b.schema.Type()
+	expectedType, exist := b.schema.Type()
 	if !exist {
 		return
 	}
 
 	// single type
-	if expectedType != "" {
-		if expectedType != actualType {
+	if !expectedType.IsArray {
+		if expectedType.Value != actualType {
 			b.addError(newError(TypeNotMatchError, path))
 		}
 		return
 	}
 
 	// mixed type
-	for _, t := range expectedTypes {
+	for _, t := range expectedType.Values {
 		if t == actualType {
 			return
 		}

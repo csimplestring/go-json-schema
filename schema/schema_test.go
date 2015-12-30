@@ -160,7 +160,7 @@ func TestObjectSchema(t *testing.T) {
 			}
 			`,
 			expectedAddition: &AdditionalProperties{
-				Schema:    Schema{
+				Schema: Schema{
 					"type": "integer",
 				},
 				BoolValue: false,
@@ -181,29 +181,28 @@ func TestObjectSchema(t *testing.T) {
 
 func TestArraySchema(t *testing.T) {
 
-	// list
-	jsonString := `
+	// items
+	tests := []struct {
+		jsonString    string
+		expectedItems *Items
+	}{
 		{
-			"items": {
-				"type": "integer"
-			}
-		}
-	`
-
-	expectedItem := Schema{
-		"type": "integer",
-	}
-
-	schema, err := deserializeSchema(jsonString)
-	assert.NoError(t, err)
-
-	actual, schemaArray, exist := schema.Items()
-	assert.Nil(t, schemaArray)
-	assert.True(t, exist)
-	assert.Equal(t, expectedItem, actual)
-
-	// tuple
-	jsonString = `
+			jsonString: `
+				{
+					"items": {
+						"type": "integer"
+					}
+				}
+			`,
+			expectedItems: &Items{
+				IsArray: false,
+				ItemSchema: Schema{
+					"type": "integer",
+				},
+			},
+		},
+		{
+			jsonString: `
 			{
 				"items": [
 					{
@@ -214,43 +213,79 @@ func TestArraySchema(t *testing.T) {
 					}
 				]
 			}
-			`
-	expectedItems := []Schema{
-		Schema{
-			"type": "integer",
-		},
-		Schema{
-			"type": "number",
+			`,
+			expectedItems: &Items{
+				IsArray: true,
+				ItemSchemas: []Schema{
+					Schema{
+						"type": "integer",
+					},
+					Schema{
+						"type": "number",
+					},
+				},
+			},
 		},
 	}
 
-	schema, err = deserializeSchema(jsonString)
-	assert.NoError(t, err)
+	for _, test := range tests {
+		schema, err := deserializeSchema(test.jsonString)
+		assert.NoError(t, err)
 
-	single, schemaArray, exist := schema.Items()
-	assert.Nil(t, single)
-	assert.True(t, exist)
-	assert.Equal(t, expectedItems, schemaArray)
+		items, exist := schema.Items()
+		assert.True(t, exist)
+		assert.Equal(t, test.expectedItems, items)
+	}
 
-	// additional item
-	jsonString = `
+	// additional items
+
+	tests2 := []struct {
+		jsonString              string
+		expectedAdditionalItems *AdditionalItems
+	}{
+		{
+			jsonString: `
 			{
-				"additionalItems": true
+				"additionalItems": false
 			}
-			`
+			`,
+			expectedAdditionalItems: &AdditionalItems{
+				IsBool: true,
+				Bool:   false,
+			},
+		},
+		{
+			jsonString: `
+			{
+				"additionalItems": {
+					"type": "string"
+				}
+			}
+			`,
+			expectedAdditionalItems: &AdditionalItems{
+				IsBool: false,
+				Schema: Schema{
+					"type": "string",
+				},
+			},
+		},
+	}
 
-	schema, err = deserializeSchema(jsonString)
-	assert.NoError(t, err)
-	additionSchema, isAllowAddition, existAddition := schema.AdditionalItems()
-	assert.True(t, existAddition)
-	assert.Nil(t, additionSchema)
-	assert.True(t, isAllowAddition)
+	for _, test := range tests2 {
+		schema, err := deserializeSchema(test.jsonString)
+		assert.NoError(t, err)
+
+		a, exist := schema.AdditionalItems()
+		assert.True(t, exist)
+		assert.Equal(t, test.expectedAdditionalItems, a)
+	}
 }
 
 func TestSchemaType(t *testing.T) {
+
 	tests := []struct {
 		jsonString   string
-		expectedType interface{}
+		expectedType *Type
 	}{
 		{
 			jsonString: `
@@ -258,7 +293,11 @@ func TestSchemaType(t *testing.T) {
 				"type": "boolean"
 			}
 			`,
-			expectedType: JsonBoolean,
+			expectedType: &Type{
+				IsArray: false,
+				Value:   JsonTypeBoolean,
+				Values:  nil,
+			},
 		},
 		{
 			jsonString: `
@@ -266,7 +305,11 @@ func TestSchemaType(t *testing.T) {
 				"type": ["integer", "boolean"]
 			}
 			`,
-			expectedType: []JsonType{JsonInteger, JsonBoolean},
+			expectedType: &Type{
+				IsArray: true,
+				Value:   "",
+				Values:  []JsonType{JsonTypeInteger, JsonTypeBoolean},
+			},
 		},
 	}
 
@@ -278,14 +321,8 @@ func TestSchemaType(t *testing.T) {
 		err := decoder.Decode(&jsonSchema)
 		assert.NoError(t, err)
 
-		actualType, actualTypes, _ := jsonSchema.Type()
-		if actualType != "" {
-			assert.Equal(t, test.expectedType, actualType)
-		} else if actualTypes != nil {
-			assert.Equal(t, test.expectedType, actualTypes)
-		} else {
-			t.Fatalf("unknown json schema type %v", actualType)
-		}
+		tp, _ := jsonSchema.Type()
+		assert.Equal(t, test.expectedType, tp)
 	}
 }
 

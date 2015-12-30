@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 //
@@ -22,36 +22,36 @@ import (
 type JsonType string
 
 const (
-	JsonInteger = JsonType("integer")
-	JsonNumber = JsonType("number")
-	JsonString = JsonType("string")
-	JsonArray = JsonType("array")
-	JsonObject = JsonType("object")
-	JsonBoolean = JsonType("boolean")
-	JsonNull = JsonType("null")
+	JsonTypeInteger = JsonType("integer")
+	JsonTypeNumber  = JsonType("number")
+	JsonTypeString  = JsonType("string")
+	JsonTypeArray   = JsonType("array")
+	JsonTypeObject  = JsonType("object")
+	JsonTypeBoolean = JsonType("boolean")
+	JsonTypeNull    = JsonType("null")
 )
 
 func getJsonType(v interface{}) (JsonType, error) {
 	switch v.(type) {
 	case bool:
-		return JsonBoolean, nil
+		return JsonTypeBoolean, nil
 	case int8, int16, int32, int, int64:
-		return JsonInteger, nil
+		return JsonTypeInteger, nil
 	case float32, float64:
-		return JsonNumber, nil
+		return JsonTypeNumber, nil
 	case string:
-		return JsonString, nil
+		return JsonTypeString, nil
 	case []interface{}:
-		return JsonArray, nil
+		return JsonTypeArray, nil
 	case map[string]interface{}:
-		return JsonObject, nil
+		return JsonTypeObject, nil
 	case nil:
-		return JsonNull, nil
+		return JsonTypeNull, nil
 	case json.Number:
 		if strings.Contains(v.(json.Number).String(), ".") {
-			return JsonNumber, nil
+			return JsonTypeNumber, nil
 		} else {
-			return JsonInteger, nil
+			return JsonTypeInteger, nil
 		}
 	default:
 		return JsonType(""), fmt.Errorf("Unsupported json type %s", reflect.TypeOf(v).String())
@@ -115,22 +115,28 @@ func (s Schema) getStringValue(key string) (value string, exist bool) {
 
 // validation keywords for any instance
 
-func (s Schema) Type() (jsonType JsonType, jsonTypes []JsonType, exist bool) {
-	exist = false
-	v, ok := s["type"]
+type Type struct {
+	IsArray bool
+	Value   JsonType
+	Values  []JsonType
+}
 
-	if !ok {
+func (s Schema) Type() (t *Type, exist bool) {
+	v, exist := s["type"]
+	if !exist {
 		return
 	}
 
-	exist = true
+	t = &Type{}
 	switch v.(type) {
 	case string:
-		jsonType = JsonType(v.(string))
+		t.IsArray = false
+		t.Value = JsonType(v.(string))
 		return
 	case []interface{}:
-		for _, t := range v.([]interface{}) {
-			jsonTypes = append(jsonTypes, JsonType(t.(string)))
+		t.IsArray = true
+		for _, vi := range v.([]interface{}) {
+			t.Values = append(t.Values, JsonType(vi.(string)))
 		}
 		return
 	}
@@ -247,42 +253,60 @@ func (s Schema) Pattern() (pattern string, exist bool) {
 
 // validation keywords for array
 
-func (s Schema) AdditionalItems() (schema Schema, boolValue bool, exist bool) {
+type AdditionalItems struct {
+	IsBool bool
+	Bool   bool
+	Schema Schema
+}
+
+func (s Schema) AdditionalItems() (a *AdditionalItems, exist bool) {
 	v, exist := s["additionalItems"]
 	if !exist {
 		return
 	}
 
+	a = &AdditionalItems{}
 	switch v.(type) {
 	case bool:
 		exist = true
-		boolValue = v.(bool)
+		a.IsBool = true
+		a.Bool = v.(bool)
 		return
 	case map[string]interface{}:
 		exist = true
-		schema = Schema(v.(map[string]interface{}))
+		a.IsBool = false
+		a.Schema = Schema(v.(map[string]interface{}))
 		return
 	default:
 		return
 	}
 }
 
-func (s Schema) Items() (schema Schema, schemaArray []Schema, exist bool) {
+type Items struct {
+	IsArray     bool
+	ItemSchema  Schema
+	ItemSchemas []Schema
+}
+
+func (s Schema) Items() (items *Items, exist bool) {
 	v, exist := s["items"]
 	if !exist {
 		return
 	}
 
 	// item can be an object or an array of objects
+	items = &Items{}
 	switch v.(type) {
 	case map[string]interface{}:
 		exist = true
-		schema = Schema(v.(map[string]interface{}))
+		items.IsArray = false
+		items.ItemSchema = Schema(v.(map[string]interface{}))
 		return
 	case []interface{}:
 		exist = true
-		for _, item := range v.([]interface{}) {
-			schemaArray = append(schemaArray, Schema(item.(map[string]interface{})))
+		items.IsArray = true
+		for _, vi := range v.([]interface{}) {
+			items.ItemSchemas = append(items.ItemSchemas, Schema(vi.(map[string]interface{})))
 		}
 		return
 	default:
@@ -354,8 +378,8 @@ type AdditionalProperties struct {
 	Schema    Schema
 	BoolValue bool
 
-	IsBool    bool
-	IsSchema  bool
+	IsBool   bool
+	IsSchema bool
 }
 
 func (s Schema) AdditionalProperties() (additionalProperties *AdditionalProperties, exist bool) {
