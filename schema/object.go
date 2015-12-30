@@ -1,7 +1,7 @@
 package schema
 import (
-	"fmt"
 	"regexp"
+	"fmt"
 )
 
 type ObjectConstraint struct {
@@ -22,6 +22,7 @@ func (o *ObjectConstraint) Validate(v interface{}, path string) {
 	o.validateMaxProperties(obj, path)
 	o.validateMinProperties(obj, path)
 	o.validateRequired(obj, path)
+	o.validateProperties(obj, path)
 }
 
 func (o *ObjectConstraint) validateMaxProperties(obj map[string]interface{}, path string) {
@@ -50,66 +51,45 @@ func (o *ObjectConstraint) validateRequired(obj map[string]interface{}, path str
 }
 
 func (o *ObjectConstraint) validateProperties(obj map[string]interface{}, path string) {
-	propSchema, exist := o.schema.Properties()
+	properties, exist := o.schema.Properties()
 	if !exist {
 		return
 	}
 
 	patternProperties, hasPatternProperties := o.schema.PatternProperties()
-	additionSchema, allowAddition, hasAddition := o.schema.AdditionalProperties()
+	additionalProperties, hasAdditionalProperties := o.schema.AdditionalProperties()
 
-	for prop, val := range obj {
-		subPath := fmt.Sprintf("%s.%s", path, prop)
+	for key, val := range obj {
+		subPath := fmt.Sprintf("%s.%s", path, key)
 
-		var s Schema
-
-		// defined property
-		if s, ok := propSchema[prop]; ok {
-			c := NewBaseConstraint(s)
+		if schema, found := properties[key]; found {
+			c := NewBaseConstraint(schema)
 			c.Validate(val, subPath)
 			o.addErrors(c.Errors())
 			continue
 		}
 
-		// try pattern property
-		if hasPatternProperties && patternProperties.match(prop, val) {
+		if hasPatternProperties {
+			if match, matchedSchema := patternProperties.Match(key); match {
+				c := NewBaseConstraint(matchedSchema)
+				c.Validate(val, subPath)
+				o.addErrors(c.Errors())
+				continue
+			}
+		}
+
+		if hasAdditionalProperties && additionalProperties.IsSchema {
+			c := NewBaseConstraint(additionalProperties.Schema)
+			c.Validate(val, subPath)
+			o.addErrors(c.Errors())
 			continue
 		}
 
-		// no additional
-		if !hasAddition || (hasAddition && !allowAddition ){
-			o.addError(newError(ObjectUndefinedPropertyError, subPath))
-			continue
-		}
-
-		if hasAddition && allowAddition {
-			continue
-		}
-
-		if hasAddition &&
-	}
-}
-
-func (o *ObjectConstraint) tryMatchPattern(p string) bool {
-	if len(o.propPatterns) == 0 {
-		return false
-	}
-
-	for _, pp := range o.propPatterns {
-		if pp.MatchString(p) {
-			return true
+		if hasAdditionalProperties && additionalProperties.IsBool {
+			if additionalProperties.BoolValue == false {
+				o.addError(newError(ObjectUndefinedPropertyError, subPath))
+			}
 		}
 	}
-
-	return false
-}
-
-
-func (o *ObjectConstraint) validatePatternProperties(obj map[string]interface{}, path string) {
-
-}
-
-func (o *ObjectConstraint) validateAdditionalProperties(obj map[string]interface{}, path string) {
-
 }
 

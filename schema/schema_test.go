@@ -1,10 +1,11 @@
 package schema
 
 import (
-	"code.yieldr.com/px/util/test/assert"
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"code.yieldr.com/px/util/test/assert"
 )
 
 func deserializeSchema(str string) (Schema, error) {
@@ -116,23 +117,26 @@ func TestObjectSchema(t *testing.T) {
 
 	prop, exist := schema.Properties()
 	assert.Equal(t, true, exist)
-	assert.Equal(t, map[string]Schema{
+	assert.Equal(t, Properties(map[string]Schema{
 		"a": Schema{"type": "integer"},
 		"b": Schema{"type": "integer"},
-	}, prop)
+	}), prop)
+
+	// test for pattern properties
 
 	pattern, exist := schema.PatternProperties()
 	assert.Equal(t, true, exist)
-	assert.Equal(t, map[string]Schema{
-		"a[0-9]b": Schema{"type": "integer"},
-	}, pattern)
+
+	match, patternSchema := pattern.Match("a2b")
+	assert.Equal(t, true, match)
+	assert.Equal(t, Schema{
+		"type": "integer",
+	}, patternSchema)
 
 	// test for additionalProperties
 	tests := []struct {
-		input                  string
-		expectedAdditionSchema Schema
-		expectedBool           bool
-		expectedExist          bool
+		input            string
+		expectedAddition *AdditionalProperties
 	}{
 		{
 			input: `
@@ -140,9 +144,12 @@ func TestObjectSchema(t *testing.T) {
 				"additionalProperties": false
 			}
 			`,
-			expectedAdditionSchema: Schema(nil),
-			expectedBool: false,
-			expectedExist: true,
+			expectedAddition: &AdditionalProperties{
+				Schema:    nil,
+				BoolValue: false,
+				IsBool:    true,
+				IsSchema:  false,
+			},
 		},
 		{
 			input: `
@@ -152,11 +159,14 @@ func TestObjectSchema(t *testing.T) {
 				}
 			}
 			`,
-			expectedAdditionSchema: Schema{
-				"type": "integer",
+			expectedAddition: &AdditionalProperties{
+				Schema:    Schema{
+					"type": "integer",
+				},
+				BoolValue: false,
+				IsBool:    false,
+				IsSchema:  true,
 			},
-			expectedBool: false,
-			expectedExist: true,
 		},
 	}
 
@@ -164,10 +174,8 @@ func TestObjectSchema(t *testing.T) {
 		s, err := deserializeSchema(test.input)
 		assert.NoError(t, err)
 
-		addition, b, exist := s.AdditionalProperties()
-		assert.Equal(t, test.expectedAdditionSchema, addition)
-		assert.Equal(t, test.expectedBool, b)
-		assert.Equal(t, test.expectedExist, exist)
+		addition, _ := s.AdditionalProperties()
+		assert.Equal(t, test.expectedAddition, addition)
 	}
 }
 

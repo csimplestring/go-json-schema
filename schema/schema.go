@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"regexp"
 )
 
 //
@@ -22,12 +23,12 @@ type JsonType string
 
 const (
 	JsonInteger = JsonType("integer")
-	JsonNumber  = JsonType("number")
-	JsonString  = JsonType("string")
-	JsonArray   = JsonType("array")
-	JsonObject  = JsonType("object")
+	JsonNumber = JsonType("number")
+	JsonString = JsonType("string")
+	JsonArray = JsonType("array")
+	JsonObject = JsonType("object")
 	JsonBoolean = JsonType("boolean")
-	JsonNull    = JsonType("null")
+	JsonNull = JsonType("null")
 )
 
 func getJsonType(v interface{}) (JsonType, error) {
@@ -329,15 +330,18 @@ func (s Schema) Required() (required []string, exist bool) {
 
 // properties returns a map where the key is the property name and the value
 // is a valid json schema for this property.
-func (s Schema) Properties() (propertiesSchema map[string]Schema, exist bool) {
+
+type Properties map[string]Schema
+
+func (s Schema) Properties() (properties Properties, exist bool) {
 	v, exist := s["properties"]
 	if !exist {
 		return
 	}
 
-	propertiesSchema = make(map[string]Schema)
+	properties = make(Properties)
 	for key, val := range v.(map[string]interface{}) {
-		propertiesSchema[key] = Schema(val.(map[string]interface{}))
+		properties[key] = Schema(val.(map[string]interface{}))
 	}
 
 	return
@@ -345,40 +349,68 @@ func (s Schema) Properties() (propertiesSchema map[string]Schema, exist bool) {
 
 // The value of "additionalProperties" MUST be a boolean or an object.
 // If it is an object, it MUST also be a valid JSON Schema.
-func (s Schema) AdditionalProperties() (additionSchema Schema, boolValue bool, exist bool) {
+
+type AdditionalProperties struct {
+	Schema    Schema
+	BoolValue bool
+
+	IsBool    bool
+	IsSchema  bool
+}
+
+func (s Schema) AdditionalProperties() (additionalProperties *AdditionalProperties, exist bool) {
 	v, exist := s["additionalProperties"]
 	if !exist {
 		return
 	}
 
+	additionalProperties = &AdditionalProperties{}
 	switch v.(type) {
 	case bool:
-		boolValue = v.(bool)
+		additionalProperties.IsBool = true
+		additionalProperties.BoolValue = v.(bool)
 		return
 	case map[string]interface{}:
-		additionSchema = Schema(v.(map[string]interface{}))
+		additionalProperties.IsSchema = true
+		additionalProperties.Schema = Schema(v.(map[string]interface{}))
 		return
 	default:
 		return
 	}
 }
 
-func (s Schema) PatternProperties() (patternSchema PatternProperties, exist bool) {
+// The value of "patternProperties" MUST be a boolean or an object.
+
+type PatternProperties struct {
+	patternSchemas map[*regexp.Regexp]Schema
+}
+
+func (p *PatternProperties) Match(prop string) (isMatched bool, matchedSchema Schema) {
+	for r, s := range p.patternSchemas {
+		if r.MatchString(prop) {
+			isMatched = true
+			matchedSchema = s
+			return
+		}
+	}
+
+	return false, nil
+}
+
+func (s Schema) PatternProperties() (patternProperties *PatternProperties, exist bool) {
 	v, exist := s["patternProperties"]
 	if !exist {
 		return
 	}
 
-	patternSchema = make(PatternProperties)
+	patternProperties = &PatternProperties{
+		patternSchemas: make(map[*regexp.Regexp]Schema),
+	}
+
 	for key, val := range v.(map[string]interface{}) {
-		patternSchema[key] = Schema(val.(map[string]interface{}))
+		r := regexp.MustCompile(key)
+		patternProperties.patternSchemas[r] = Schema(val.(map[string]interface{}))
 	}
 
 	return
-}
-
-type PatternProperties map[string]Schema
-
-func (p PatternProperties) match(prop string, val interface{}) bool {
-
 }
