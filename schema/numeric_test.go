@@ -13,7 +13,7 @@ func TestNumericConstraint(t *testing.T) {
 		n      interface{}
 		schema Schema
 
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			path: "a",
@@ -22,8 +22,8 @@ func TestNumericConstraint(t *testing.T) {
 				"multipleOf": json.Number("3"),
 			},
 
-			expected: []SchemaError{
-				&schemaError{NumericMultipleOfError, "a"},
+			expected: []ValidationError{
+				&validationError{NumericMultipleOfError, "a"},
 			},
 		},
 		{
@@ -34,9 +34,9 @@ func TestNumericConstraint(t *testing.T) {
 				"minimum":    json.Number("90"),
 			},
 
-			expected: []SchemaError{
-				&schemaError{NumericMultipleOfError, "a"},
-				&schemaError{NumericMinimumError, "a"},
+			expected: []ValidationError{
+				&validationError{NumericMultipleOfError, "a"},
+				&validationError{NumericMinimumError, "a"},
 			},
 		},
 	}

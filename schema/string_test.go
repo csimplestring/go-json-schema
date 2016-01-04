@@ -12,7 +12,7 @@ func TestStringConstraint(t *testing.T) {
 		n      interface{}
 		schema Schema
 
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			path: "a",
@@ -22,9 +22,9 @@ func TestStringConstraint(t *testing.T) {
 				"pattern":   "foo(\\d+)",
 			},
 
-			expected: []SchemaError{
-				&schemaError{StringMinLengthError, "a"},
-				&schemaError{StringPatternError, "a"},
+			expected: []ValidationError{
+				&validationError{StringMinLengthError, "a"},
+				&validationError{StringPatternError, "a"},
 			},
 		},
 	}

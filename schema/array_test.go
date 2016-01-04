@@ -10,7 +10,7 @@ func TestArrayConstraintUniqueItems(t *testing.T) {
 
 	tests := []struct {
 		input          []interface{}
-		expectedErrors []SchemaError
+		expectedErrors []ValidationError
 	}{
 		{
 			input: []interface{}{
@@ -57,8 +57,8 @@ func TestArrayConstraintUniqueItems(t *testing.T) {
 					"c": 3,
 				},
 			},
-			expectedErrors: []SchemaError{
-				&schemaError{ArrayUniqueItemError, "a[1]"},
+			expectedErrors: []ValidationError{
+				&validationError{ArrayUniqueItemError, "a[1]"},
 			},
 		},
 	}
@@ -77,7 +77,7 @@ func TestArrayConstraintItems(t *testing.T) {
 	listTests := []struct {
 		itemSchema     Schema
 		value          []interface{}
-		expectedErrors []SchemaError
+		expectedErrors []ValidationError
 	}{
 		{
 			itemSchema: Schema{
@@ -95,7 +95,7 @@ func TestArrayConstraintItems(t *testing.T) {
 				},
 			},
 			value: []interface{} {json.Number("1.1")},
-			expectedErrors: []SchemaError{
+			expectedErrors: []ValidationError{
 				newError(TypeNotMatchError, "a[0]"),
 			},
 		},
@@ -111,7 +111,7 @@ func TestArrayConstraintItems(t *testing.T) {
 	tupleTests := []struct{
 		itemSchema     Schema
 		value          []interface{}
-		expectedErrors []SchemaError
+		expectedErrors []ValidationError
 	}{
 		{
 			itemSchema: Schema{
@@ -133,7 +133,7 @@ func TestArrayConstraintItems(t *testing.T) {
 				},
 			},
 			value: []interface{} {json.Number("1.1")},
-			expectedErrors: []SchemaError{
+			expectedErrors: []ValidationError{
 				newError(TypeNotMatchError, "a[0]"),
 			},
 		},
@@ -152,7 +152,7 @@ func TestArrayConstraintItems(t *testing.T) {
 				json.Number("1"),
 				json.Number("1"),
 			},
-			expectedErrors: []SchemaError{
+			expectedErrors: []ValidationError{
 				newError(TypeNotMatchError, "a[1]"),
 			},
 		},
@@ -184,7 +184,7 @@ func TestArrayConstraintItems(t *testing.T) {
 				json.Number("1"),
 				"str",
 			},
-			expectedErrors: []SchemaError{
+			expectedErrors: []ValidationError{
 				newError(ArrayAdditionalItemError, "a[1]"),
 			},
 		},
@@ -204,7 +204,7 @@ func TestArrayConstraintItems(t *testing.T) {
 				"str",
 				json.Number("2"),
 			},
-			expectedErrors: []SchemaError{
+			expectedErrors: []ValidationError{
 				newError(TypeNotMatchError, "a[2]"),
 			},
 		},

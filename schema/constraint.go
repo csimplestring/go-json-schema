@@ -3,7 +3,7 @@ package schema
 import "reflect"
 
 type Constraint interface {
-	Errors() []SchemaError
+	Errors() []ValidationError
 	Validate(v interface{}, path string)
 }
 
@@ -37,7 +37,7 @@ type Constraint interface {
 
 type baseConstraint struct {
 	schema Schema
-	errors []SchemaError
+	errors []ValidationError
 }
 
 func NewBaseConstraint(schema Schema) *baseConstraint {
@@ -46,15 +46,15 @@ func NewBaseConstraint(schema Schema) *baseConstraint {
 	}
 }
 
-func (b *baseConstraint) Errors() []SchemaError {
+func (b *baseConstraint) Errors() []ValidationError {
 	return b.errors
 }
 
-func (b *baseConstraint) addError(e SchemaError) {
+func (b *baseConstraint) addError(e ValidationError) {
 	b.errors = append(b.errors, e)
 }
 
-func (b *baseConstraint) addErrors(e []SchemaError) {
+func (b *baseConstraint) addErrors(e []ValidationError) {
 	b.errors = append(b.errors, e...)
 }
 
@@ -66,7 +66,7 @@ func (b *baseConstraint) Validate(v interface{}, path string) {
 	b.validateOneOf(v, path)
 	b.validateNot(v, path)
 
-	t, err := getJsonType(v)
+	t, err := ParseType(v)
 	if err != nil {
 		b.addError(newError(UndefinedTypeError, path))
 	}
@@ -89,7 +89,7 @@ func (b *baseConstraint) Validate(v interface{}, path string) {
 }
 
 func (b *baseConstraint) validateType(v interface{}, path string) {
-	actualType, err := getJsonType(v)
+	actualType, err := ParseType(v)
 	if err != nil {
 		b.addError(newError(TypeError, path))
 	}

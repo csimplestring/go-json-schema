@@ -44,29 +44,29 @@ const (
 	UndefinedTypeError = ErrorCode("undefined type")
 )
 
-type SchemaError interface {
+type ValidationError interface {
 	error
 	Code() ErrorCode
 	Path() string
 }
 
-type schemaError struct {
+type validationError struct {
 	code ErrorCode
 	path string
 }
 
-func newError(code ErrorCode, path string) *schemaError {
-	return &schemaError{code, path}
+func newError(code ErrorCode, path string) *validationError {
+	return &validationError{code, path}
 }
 
-func (s *schemaError) Code() ErrorCode {
+func (s *validationError) Code() ErrorCode {
 	return s.code
 }
 
-func (s *schemaError) Path() string {
+func (s *validationError) Path() string {
 	return s.path
 }
 
-func (s *schemaError) Error() string {
+func (s *validationError) Error() string {
 	return fmt.Sprintf("Error: %s, Path: %s", s.Code(), s.Path())
 }

@@ -11,7 +11,7 @@ func TestTypeConstraint(t *testing.T) {
 	tests := []struct {
 		schema   Schema
 		value    interface{}
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			schema:   Schema{},
@@ -37,7 +37,7 @@ func TestTypeConstraint(t *testing.T) {
 				"type": []interface{}{"integer"},
 			},
 			value: "str",
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(TypesNotMatchError, "a"),
 			},
 		},
@@ -46,7 +46,7 @@ func TestTypeConstraint(t *testing.T) {
 				"type": "object",
 			},
 			value: "str",
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(TypeNotMatchError, "a"),
 			},
 		},
@@ -63,7 +63,7 @@ func TestEnumConstraint(t *testing.T) {
 	tests := []struct {
 		schema   Schema
 		value    interface{}
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			schema: Schema{
@@ -92,7 +92,7 @@ func TestEnumConstraint(t *testing.T) {
 				},
 			},
 			value: json.Number("1.21"),
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(EnumError, "a"),
 			},
 		},
@@ -109,7 +109,7 @@ func TestAllOfConstraint(t *testing.T) {
 	tests := []struct {
 		schema   Schema
 		value    interface{}
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			schema: Schema{
@@ -143,7 +143,7 @@ func TestAllOfConstraint(t *testing.T) {
 				},
 			},
 			value: json.Number("3"),
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(AllOfError, "a"),
 			},
 		},
@@ -162,7 +162,7 @@ func TestAllOfConstraint(t *testing.T) {
 				},
 			},
 			value: json.Number("1.3"),
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(AllOfError, "a"),
 				newError(AllOfError, "a"),
 			},
@@ -180,7 +180,7 @@ func TestAnyOfConstraint(t *testing.T) {
 	tests := []struct {
 		schema   Schema
 		value    interface{}
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			schema: Schema{
@@ -214,7 +214,7 @@ func TestAnyOfConstraint(t *testing.T) {
 				},
 			},
 			value: json.Number("3.1"),
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(AnyOfError, "a"),
 			},
 		},
@@ -231,7 +231,7 @@ func TestOneOfConstraint(t *testing.T) {
 	tests := []struct {
 		schema   Schema
 		value    interface{}
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			schema: Schema{
@@ -265,7 +265,7 @@ func TestOneOfConstraint(t *testing.T) {
 				},
 			},
 			value: json.Number("1.2"),
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(OneOfError, "a"),
 			},
 		},
@@ -282,7 +282,7 @@ func TestNotConstraint(t *testing.T) {
 	tests := []struct {
 		schema   Schema
 		value    interface{}
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			schema: Schema{
@@ -300,7 +300,7 @@ func TestNotConstraint(t *testing.T) {
 				},
 			},
 			value: json.Number("1"),
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(NotError, "a"),
 			},
 		},
@@ -317,7 +317,7 @@ func TestBaseConstraint(t *testing.T) {
 	tests := []struct {
 		schema   Schema
 		value    interface{}
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			schema: Schema{

@@ -9,7 +9,7 @@ func TestObjectMaxMinRequired(t *testing.T) {
 	tests := []struct {
 		obj      map[string]interface{}
 		schema   Schema
-		expected []SchemaError
+		expected []ValidationError
 	}{
 		{
 			obj: map[string]interface{}{
@@ -52,7 +52,7 @@ func TestObjectMaxMinRequired(t *testing.T) {
 //					},
 //				},
 			},
-			expected: []SchemaError{
+			expected: []ValidationError{
 				newError(ObjectMinPropertiesError, "p"),
 				newError(ObjectRequiredPropertiesError, "p"),
 			},
